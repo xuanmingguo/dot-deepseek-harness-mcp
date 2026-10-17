@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720">
+<rect width="1440" height="720" fill="#f5f7ff"/>
+<circle cx="1370" cy="0" r="210" fill="#e9edff"/>
+<circle cx="1310" cy="45" r="80" fill="#fff0cf"/>
+<text x="72" y="76" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="700">DOT × DEEPSEEK HARNESS</text>
+<rect x="1130" y="40" width="238" height="46" rx="23" fill="#ffffff" stroke="#d9dfef" stroke-width="2"/>
+<text x="1155" y="71" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="700">48 TOOLS · MCP</text>
+<text x="72" y="165" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="56" font-weight="700">在 DOT 里，调用你的 Harness</text>
+<text x="72" y="222" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="400">任务执行、历史检索、文件搜索，都在同一段对话里。</text>
+<rect x="72" y="288" width="288" height="168" rx="20" fill="#ffffff" stroke="#d9dfef" stroke-width="2"/>
+<circle cx="103" cy="315" r="10" fill="#4255d5"/>
+<text x="96" y="359" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">DOT 主聊天</text>
+<text x="96" y="398" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400">描述任务 / Chat</text>
+<text x="96" y="433" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">原生 MCP 工具</text>
+<path d="M370 371 L390 371" fill="none" stroke="#8998c8" stroke-width="3"/>
+<path d="M388 365 L398 371 L388 377 Z" fill="#8998c8"/>
+<rect x="408" y="288" width="288" height="168" rx="20" fill="#ffffff" stroke="#d9dfef" stroke-width="2"/>
+<circle cx="439" cy="315" r="10" fill="#f2a52d"/>
+<text x="432" y="359" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">私有 Tunnel</text>
+<text x="432" y="398" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400">Secure MCP Tunnel</text>
+<text x="432" y="433" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">现有出站连接</text>
+<path d="M706 371 L726 371" fill="none" stroke="#8998c8" stroke-width="3"/>
+<path d="M724 365 L734 371 L724 377 Z" fill="#8998c8"/>
+<rect x="744" y="288" width="288" height="168" rx="20" fill="#ffffff" stroke="#d9dfef" stroke-width="2"/>
+<circle cx="775" cy="315" r="10" fill="#4255d5"/>
+<text x="768" y="359" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">已有 Harness</text>
+<text x="768" y="398" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400">复用 Host 与模型</text>
+<text x="768" y="433" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">公共插件 API</text>
+<path d="M1042 371 L1062 371" fill="none" stroke="#8998c8" stroke-width="3"/>
+<path d="M1060 365 L1070 371 L1060 377 Z" fill="#8998c8"/>
+<rect x="1080" y="288" width="288" height="168" rx="20" fill="#ffffff" stroke="#d9dfef" stroke-width="2"/>
+<circle cx="1111" cy="315" r="10" fill="#f2a52d"/>
+<text x="1104" y="359" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">项目与会话</text>
+<text x="1104" y="398" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400">文件 · 任务 · 原始历史</text>
+<text x="1104" y="433" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">结果与来源可核对</text>
+<rect x="72" y="496" width="416" height="140" rx="18" fill="#e9edff"/>
+<text x="96" y="543" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">任务与恢复</text>
+<text x="96" y="590" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400">提交、等待、续接、查原结果</text>
+<rect x="512" y="496" width="416" height="140" rx="18" fill="#edf8f3"/>
+<text x="536" y="543" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">历史与结果</text>
+<text x="536" y="590" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400">关键词检索，展开原始消息</text>
+<rect x="952" y="496" width="416" height="140" rx="18" fill="#fff3dc"/>
+<text x="976" y="543" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">文件与内容</text>
+<text x="976" y="590" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400">查目录、搜匹配行、校验读回</text>
+<text x="72" y="687" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">复用现有环境 · 通用示例 · 账号与连接权限由运行方配置</text>
+</svg>

@@ -1,33 +1,54 @@
-# DOT DeepSeek Harness MCP
+# DOT × DeepSeek Harness
 
-Connect a DOT main chat to an **existing DeepSeek Harness** through MCP. This source release extends [Harness Relay MCP](https://github.com/tonytanglab/deepseek-harness-relay-mcp) for Harness **0.2.1-alpha.2**, using its public plugin APIs without patching Harness or launching another Host.
+**中文首页** · [English](README.en.md) · [安装指南](docs/OPERATIONS.md) · [工具说明](docs/TOOLS.md)
 
-[中文说明](README.zh-CN.md) · [Setup and operations](docs/OPERATIONS.md) · [Tools](docs/TOOLS.md) · [Validation boundaries](docs/ACCEPTANCE.md)
+[![CI](https://github.com/xuanmingguo/dot-deepseek-harness-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/xuanmingguo/dot-deepseek-harness-mcp/actions/workflows/ci.yml) · [MIT 许可证](LICENSE)
+
+让 **DOT 主聊天直接操控已有的 DeepSeek Harness**：派任务、查进度、找历史、搜文件，并核对真实结果。复用现有项目、模型与会话，不另起 Harness Host，也不创建 Work/Codex 聊天。
+
+![DOT 通过私有 MCP Tunnel 连接已有 Harness 的功能总览](docs/assets/overview.png)
+
+## 可以用它做什么
+
+| 你想做的事 | 它提供的能力 |
+|---|---|
+| 把任务交给 Harness | 提交任务、查看进度、续接会话、排队、引导和取消，保留原始任务与操作编号 |
+| 找回以前做过的工作 | 按项目、会话、状态筛选任务；关键词检索原始历史，展开命中消息及前文 |
+| 在项目中找到文件和代码 | 浏览目录、搜索文件内容，返回真实路径、匹配行和片段，再按行或末尾读取 |
+| 核对结果与处理断线 | 用文件 SHA-256 校验内容；查询原请求和原生历史，避免不确定时重复派发 |
+
+可以直接在 DOT 中描述目标，例如：
+
+> “找一下这个项目之前做过的分页修复，把原来的结果给我。”
+>
+> “搜索项目里包含这个关键词的文件，告诉我文件名和具体行号。”
+>
+> “把这项修改交给 Harness，完成后读回结果并核对文件。”
+
+版本 `0.2.18-dsh021a2.14` 在兼容 Host 中提供 **48 个工具**，已适配 Harness **0.2.1-alpha.2**。实际工具、模型和权限以运行中的 `tools/list` 与 `get_operational_capabilities` 为准。
+
+## 看一次实际搜索与读回
+
+下面使用通用演示文件，展示本轮原 DOT 的真实只读返回：搜索关键词，定位 `notes/task-notes.md` 第 3 行，再用本次命中的 SHA-256 校验读回。
+
+![实际搜索命中、原行号与 SHA 校验读回的可视化演示](docs/assets/search-demo.png)
+
+这是**真实返回的可视化整理，并非原始聊天截图**；仅保留相对搜索目录的文件路径和通用内容。[脱敏结果摘录](docs/assets/demo-result.json)可直接查看。演示文件共 4 行，本次只读回命中行，返回的续读位置是第 4 行。
+
+## 它如何连接
 
 ```text
-DOT main chat
-  → OpenAI Secure MCP Tunnel
-  → local stdio proxy
-  → embedded Relay plugin in the existing Harness Host
-  → native projects, sessions, tasks and history
+DOT 主聊天 → OpenAI Secure MCP Tunnel → 本地 stdio proxy
+          → 已有 Harness Host 内的 Relay 插件 → 原生项目、会话与任务
 ```
 
-No Work/Codex chat or second Harness runtime is required. DOT/custom MCP access and Tunnel availability depend on your account, workspace permissions and Platform organization; this repository does not grant that access. The Tunnel setup is for a private custom MCP connection, not a public plugin marketplace submission. See the [official connection guide](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels#connect-from-chatgpt).
+基于固定版本的 [Harness Relay MCP](https://github.com/tonytanglab/deepseek-harness-relay-mcp)，通过 Harness 公共插件 API 接入，不修改上游 Harness。固定来源及版本见 [UPSTREAM.json](UPSTREAM.json)。
 
-## What it provides
+使用前需要已有 Harness，以及账号、工作空间与 Platform 组织允许的 DOT / 自定义 MCP / Tunnel 权限。开源代码本身不授予这些产品权限。请参考[官方连接说明](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels#connect-from-chatgpt)。
 
-Version `0.2.18-dsh021a2.14` exposes 48 tools when connected to a compatible Host:
+## 从源码开始
 
-- Native task submission, progress, replies, queue controls and cancellation, with persistent run/operation IDs and idempotency.
-- Compact run discovery, paged original history, keyword history search and original-message/context expansion.
-- [Project file discovery](docs/PROJECT_FILES.md), [UTF-8 line/tail reads](docs/PROJECT_TEXT.md) and [literal content search](docs/PROJECT_SEARCH.md), with bounded results and SHA-256 checks.
-- Native interactions, permission reconciliation, and explicitly scoped [deployment planning and evidence reads](docs/DEPLOYMENT.md).
-
-The [tool catalog](docs/tool-catalog.json) describes the unconfigured defaults. Live `tools/list` and `get_operational_capabilities` describe the running configuration. A disconnected proxy may expose only `doctor`.
-
-## Build from source
-
-Use Node.js **22.19 or later** and pnpm **12.11.2** (the CI version). From your clone:
+需要 Node.js **>=22.19**；CI 使用 pnpm **12.11.2**：
 
 ```sh
 git clone https://github.com/xuanmingguo/dot-deepseek-harness-mcp.git
@@ -39,20 +60,31 @@ pnpm run test:package
 npm pack --ignore-scripts
 ```
 
-`prepack` performs type checks, builds the bundled runtime and validates the package. `npm pack --ignore-scripts` packages those already checked files into `harness-relay-mcp-0.2.18-dsh021a2.14.tgz`. The upstream npm package name is retained for compatibility; **this fork is not published to npm**. A registry install or `npx harness-relay-mcp` does not select this fork.
+`prepack` 包含类型检查、构建与包内容校验。最后生成 `harness-relay-mcp-0.2.18-dsh021a2.14.tgz`，按[安装与运维指南](docs/OPERATIONS.md)接入**已有** Harness profile，再配置自己的 Tunnel。
 
-Install that local tarball into your existing Harness profile, configure the attached plugin and stdio proxy, then connect your private Tunnel: follow [OPERATIONS.md](docs/OPERATIONS.md). The guide includes the native CLI command, examples, account requirements and a small DOT acceptance path.
+保留上游 npm 包名是为了兼容。**本 fork 尚未发布到 npm**；直接安装 registry 包或运行 `npx harness-relay-mcp` 不会选中这里的修改。
 
-## Permissions and recovery
+## 文档与验证
 
-`start_run` defaults to `read-only` with `confirmedDangerousPermission=false`. A configured trusted operator can change omitted fields to full access; explicit call values take precedence. The examples keep that setting false. Workspace/task scopes are instructions and admission checks, not OS process isolation or multi-tenant access control. See the [permission contract](docs/TOOLS.md#权限选择与默认值).
+| 文档 | 内容 |
+|---|---|
+| [安装与运维](docs/OPERATIONS.md) | 构建、已有 profile 接入、Tunnel、工具刷新、诊断与回滚 |
+| [工具说明](docs/TOOLS.md) · [完整目录](docs/tool-catalog.json) | 输入、输出、权限与恢复约定 |
+| [历史搜索](docs/HISTORY_SEARCH.md) · [消息上下文](docs/SESSION_CONTEXT.md) | 找到旧任务后核对原始消息 |
+| [目录发现](docs/PROJECT_FILES.md) · [文本读取](docs/PROJECT_TEXT.md) · [内容搜索](docs/PROJECT_SEARCH.md) | 文件查询、范围、扫描覆盖与校验边界 |
+| [验证记录与复测方法](docs/ACCEPTANCE.md) | 区分本地测试、已安装插件和原 DOT 实测 |
+| [同类项目对照](docs/CAPABILITY_COMPARISON.md) | 功能来源、重合与边界 |
 
-Select provider/model/reasoning from the **actual existing Host capabilities**. Model credentials and defaults belong to the operator; no provider subscription or model access is bundled here.
+公开版本已通过原生测试、类型/构建/打包与隐私检查；原 DOT 也完成过任务、历史和文件读回验证。具体结果与适用边界见验收文档，持续检查见上方 CI。
 
-Keep the original `runId`, `operationId`, `sessionId` and stable `idempotencyKey`. After a timeout or disconnect, query/reconcile that operation before deciding what to do next. A dispatch receipt, queued reply or HTTP 200 does not prove task completion. Cancellation must be verified from the final native state.
+## 权限与隐私
 
-Keep tokens, Tunnel configuration, original chat history, task journals, backups and receipts outside Git. Report problems with a minimal sanitized reproduction; see [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+`start_run` 缺省为只读。示例保持 `DSH_RELAY_TRUSTED_OPERATOR=false`；文件范围属于任务指令与准入校验，不是 OS 逐路径隔离。需要写入或部署时，按实际授权明确指定范围与权限，详见[权限约定](docs/TOOLS.md#权限选择与默认值)和[部署契约](docs/DEPLOYMENT.md)。
 
-## License and attribution
+项目不提供模型凭据或订阅。Token、Tunnel 配置、原聊天历史、任务 journal、个人路径、备份和原始回执留在私有环境。发生超时或断线，先查原 `runId` / `operationId`，不要换键重派。
 
-MIT; the upstream [LICENSE](LICENSE) is preserved unchanged. [NOTICE](NOTICE) and [UPSTREAM.json](UPSTREAM.json) identify the pinned upstream source and separate local maintenance. This is an independent integration, with no claim of official OpenAI or DeepSeek support.
+## 许可与贡献
+
+采用 **MIT**；保留上游 [LICENSE](LICENSE) 与固定来源，维护归属见 [NOTICE](NOTICE)。这是独立维护的集成，不代表 OpenAI 或 DeepSeek 官方支持。
+
+欢迎提供可复现的问题与改进，提交前请移除个人信息。见 [贡献说明](CONTRIBUTING.md)与[安全报告](SECURITY.md)。图示提供 PNG 与可编辑 SVG，均使用通用展示内容。

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<rect width="1440" height="900" fill="#101b34"/>
+<text x="72" y="94" fill="#ffffff" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="46" font-weight="700">从一句话，到文件里的那一行</text>
+<text x="72" y="143" fill="#b5c3df" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="25" font-weight="400">原 DOT 只读调用摘录 · 使用通用演示文件</text>
+<rect x="72" y="198" width="440" height="610" rx="22" fill="#f5f7ff"/>
+<text x="98" y="244" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="700">01 / 搜索</text>
+<text x="98" y="291" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="26" font-weight="700">找到包含关键词的文件</text>
+<text x="98" y="336" fill="#536581" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="22" font-weight="400">DOT_DEMO_SEARCH_READY</text>
+<text x="98" y="424" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="700">02 / 定位</text>
+<text x="98" y="471" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="26" font-weight="700">拿到路径、行号与校验值</text>
+<text x="98" y="516" fill="#536581" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="22" font-weight="400">notes/task-notes.md</text>
+<text x="98" y="604" fill="#4255d5" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="700">03 / 读回</text>
+<text x="98" y="651" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="26" font-weight="700">核对命中行的原文</text>
+<text x="98" y="696" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400">SHA-256 与本次搜索一致</text>
+<rect x="552" y="198" width="816" height="610" rx="22" fill="#ffffff"/>
+<text x="584" y="247" fill="#4255d5" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="23" font-weight="700">SEARCH → VERIFIED READ</text>
+<path d="M584 270 L1336 270" fill="none" stroke="#e7ebf5" stroke-width="2"/>
+<text x="584" y="321" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400">文件</text>
+<text x="664" y="321" fill="#14213d" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="25" font-weight="400">notes/task-notes.md</text>
+<text x="584" y="369" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400">命中</text>
+<text x="664" y="369" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">第 3 行 · 1 处匹配</text>
+<rect x="584" y="402" width="752" height="68" rx="12" fill="#edf1ff"/>
+<text x="608" y="447" fill="#4255d5" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="24" font-weight="400">3</text>
+<text x="660" y="447" fill="#14213d" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="26" font-weight="700">DOT_DEMO_SEARCH_READY</text>
+<rect x="584" y="505" width="236" height="103" rx="12" fill="#f4f8f7"/>
+<text x="602" y="541" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">扫描完成</text>
+<text x="602" y="581" fill="#167858" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="24" font-weight="700">true</text>
+<rect x="842" y="505" width="236" height="103" rx="12" fill="#f4f8f7"/>
+<text x="860" y="541" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">结果省略</text>
+<text x="860" y="581" fill="#167858" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="24" font-weight="700">false</text>
+<rect x="1100" y="505" width="236" height="103" rx="12" fill="#f4f8f7"/>
+<text x="1118" y="541" fill="#536581" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400">文件信息</text>
+<text x="1118" y="581" fill="#167858" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="24" font-weight="700">120 B / 4 行</text>
+<text x="584" y="660" fill="#14213d" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="700">SHA-256 · 搜索与读回一致</text>
+<text x="584" y="706" fill="#536581" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="22" font-weight="400">ed5af5d31eb322e56339749455ba612f</text>
+<text x="584" y="744" fill="#536581" font-family="DejaVu Sans Mono,ui-monospace,monospace" font-size="22" font-weight="400">c1db82ac9c7e47c952d938a0258d99b3</text>
+<text x="72" y="858" fill="#b5c3df" font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400">真实返回的可视化整理，非原始聊天截图；文件为公开演示数据。</text>
+</svg>

@@ -81,7 +81,13 @@
     "deploy/stdio.sh.example",
     "deploy/tunnel-client.example.yaml",
     "deploy/dsh-mcp-tunnel.service.example",
-    "deploy/40-mcp-relay.conf.example"
+    "deploy/40-mcp-relay.conf.example",
+    "README.en.md",
+    "docs/assets/overview.png",
+    "docs/assets/overview.svg",
+    "docs/assets/search-demo.png",
+    "docs/assets/search-demo.svg",
+    "docs/assets/demo-result.json"
   ],
   "license": "MIT",
   "engines": {

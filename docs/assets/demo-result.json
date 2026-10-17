@@ -1,0 +1,18 @@
+{
+  "description": "原 DOT 真实只读返回的通用示例摘录；路径相对于本次搜索目录。",
+  "relayVersion": "0.2.18-dsh021a2.14",
+  "query": "DOT_DEMO_SEARCH_READY",
+  "path": "notes/task-notes.md",
+  "lineNumber": 3,
+  "text": "DOT_DEMO_SEARCH_READY",
+  "sha256": "ed5af5d31eb322e56339749455ba612fc1db82ac9c7e47c952d938a0258d99b3",
+  "matchedLines": 1,
+  "scanComplete": true,
+  "resultsTruncated": false,
+  "readbackMatchesSearch": true,
+  "fileBytes": 120,
+  "totalLines": 4,
+  "returnedLines": 1,
+  "hasMore": true,
+  "nextStartLine": 4
+}
