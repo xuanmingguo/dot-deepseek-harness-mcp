@@ -1,0 +1,170 @@
+{
+  "name": "harness-relay-mcp",
+  "version": "0.2.18-dsh021a2.14",
+  "description": "Control existing DeepSeek Harness from DOT through MCP: durable tasks, history and project search.",
+  "author": "TonyTangLab",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xuanmingguo/dot-deepseek-harness-mcp.git"
+  },
+  "homepage": "https://github.com/xuanmingguo/dot-deepseek-harness-mcp",
+  "bugs": {
+    "url": "https://github.com/xuanmingguo/dot-deepseek-harness-mcp/issues"
+  },
+  "keywords": [
+    "agent",
+    "chatgpt",
+    "deepseek-harness",
+    "delegation",
+    "dot",
+    "mcp",
+    "monitoring",
+    "secure-mcp-tunnel"
+  ],
+  "type": "module",
+  "main": "./dist/dsh-relay-harness.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/types/harness-entry.d.ts",
+      "default": "./dist/dsh-relay-harness.mjs"
+    },
+    "./harness": {
+      "types": "./dist/types/harness-entry.d.ts",
+      "default": "./dist/dsh-relay-harness.mjs"
+    },
+    "./standalone": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/dsh-relay.mjs"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "harness-relay-mcp": "./dist/dsh-relay.mjs",
+    "harness-relay-mcp-proxy": "./dist/dsh-relay-proxy.mjs",
+    "dsh-relay": "./dist/dsh-relay.mjs",
+    "dsh-relay-proxy": "./dist/dsh-relay-proxy.mjs"
+  },
+  "files": [
+    ".codex-plugin/plugin.json",
+    ".mcp.json",
+    "dist/dsh-relay.mjs",
+    "dist/dsh-relay.mjs.map",
+    "dist/dsh-relay-proxy.mjs",
+    "dist/dsh-relay-proxy.mjs.map",
+    "dist/dsh-relay-harness.mjs",
+    "dist/dsh-relay-harness.mjs.map",
+    "dist/types/",
+    "cordis.patch.yml",
+    "skills/",
+    "README.md",
+    "README.zh-CN.md",
+    "UPSTREAM.json",
+    "docs/ACCEPTANCE.md",
+    "docs/CAPABILITY_COMPARISON.md",
+    "docs/HISTORY_SEARCH.md",
+    "docs/SESSION_CONTEXT.md",
+    "docs/PROJECT_FILES.md",
+    "docs/PROJECT_TEXT.md",
+    "docs/PROJECT_SEARCH.md",
+    "docs/TOOLS.md",
+    "docs/tool-catalog.json",
+    "docs/OPERATIONS.md",
+    "docs/DEPLOYMENT.md",
+    "scripts/diagnose-tunnel.mjs",
+    "CHANGELOG.md",
+    "LICENSE",
+    "version.json",
+    "NOTICE",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "deploy/stdio.sh.example",
+    "deploy/tunnel-client.example.yaml",
+    "deploy/dsh-mcp-tunnel.service.example",
+    "deploy/40-mcp-relay.conf.example"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.19"
+  },
+  "scripts": {
+    "build": "node ./scripts/sync-version.mjs && tsc --noEmit && node ./scripts/build.mjs",
+    "prepare:codex-local": "node ./scripts/sync-version.mjs && tsc --noEmit && node ./scripts/build.mjs && node ./scripts/verify-built-relay-version.mjs",
+    "check:built-version": "node ./scripts/verify-built-relay-version.mjs",
+    "check:version": "node ./scripts/sync-version.mjs --check",
+    "prepack": "node ./scripts/sync-version.mjs && tsc --noEmit && node ./scripts/build.mjs && node ./scripts/verify-built-relay-version.mjs && node ./scripts/validate-package-files.mjs",
+    "pretest": "node ./scripts/sync-version.mjs --check",
+    "test": "tsx --test ./tests/*.test.ts",
+    "test:mcp": "node ./scripts/sync-version.mjs && tsc --noEmit && node ./scripts/build.mjs && node ./scripts/verify-built-relay-version.mjs && node ./scripts/mcp-smoke.mjs",
+    "check:package": "node ./scripts/validate-package-files.mjs",
+    "test:package": "node ./scripts/verify-package-tarball.mjs",
+    "docs:tools": "tsx ./scripts/generate-tool-catalog.ts",
+    "check:public": "python3 scripts/check-public-release.py --history",
+    "test:privacy": "python3 tests/test-public-release.py"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2 || 4.0.5-alpha.1",
+    "@deepseek-ai/dsh-agent-presets": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-api-gateway": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-api-session-controller": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-api-settings-controller": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-api-workspace-controller": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-host-webserver": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-permission-presets": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-session": ">=0.1.3-alpha.2 <0.2.0 || 0.2.1-alpha.2",
+    "@deepseek-ai/schemastery": "^3.18.2 || 3.18.5-alpha.1"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-agent-presets": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-api-gateway": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-api-session-controller": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-api-settings-controller": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-api-workspace-controller": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-host-webserver": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-permission-presets": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-session": {
+      "optional": true
+    },
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "esbuild": "0.25.12",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "zod": "4.4.3"
+  },
+  "private": true,
+  "contributors": [
+    {
+      "name": "xuanmingguo",
+      "url": "https://github.com/xuanmingguo"
+    }
+  ]
+}

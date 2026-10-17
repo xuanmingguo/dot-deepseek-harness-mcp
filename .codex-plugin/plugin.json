@@ -1,0 +1,33 @@
+{
+  "name": "deepseek-harness-relay",
+  "version": "0.2.18-dsh021a2.14",
+  "description": "Delegate and monitor DeepSeek Harness work from any MCP agent.",
+  "author": {
+    "name": "TonyTangLab"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "mcp",
+    "delegation",
+    "agents"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "DOT Harness MCP",
+    "shortDescription": "Delegate and monitor DeepSeek Harness tasks.",
+    "longDescription": "Delegate long-running work to DeepSeek Harness from any MCP agent and monitor native sessions and durable events to completion.",
+    "developerName": "xuanmingguo; upstream TonyTangLab",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Named reviews: pass exact provider/model and authorizationBasis only through the plugin's native MCP tools; do not reconfirm.",
+      "Monitor Harness to completion using native MCP. Never create temporary Node, PowerShell, Python, or shell clients.",
+      "If tools are unavailable, check installation and refresh the updated tool catalog in the existing DOT chat."
+    ]
+  }
+}

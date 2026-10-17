@@ -1,0 +1,17 @@
+DOT DeepSeek Harness MCP
+
+Based on Harness Relay MCP by tonytanglab:
+https://github.com/tonytanglab/deepseek-harness-relay-mcp
+Pinned upstream commit: 17e690cf9a56fc65fe39b2c214276cfdcb5a1891
+Upstream base version: 0.2.18
+
+The original MIT LICENSE and upstream copyright notice are preserved unchanged.
+See UPSTREAM.json for source archive provenance.
+
+Local compatibility, reliability, project/history tools and public-release
+maintenance are maintained separately by xuanmingguo and contributors:
+https://github.com/xuanmingguo/dot-deepseek-harness-mcp
+
+This independent integration is not an official OpenAI or DeepSeek product and
+does not claim their endorsement or support. Their names identify compatible
+products and services; credentials and product access are supplied by operators.

@@ -1,0 +1,253 @@
+import { isDeepStrictEqual } from 'node:util'
+import type { RelayConfig } from '../config.js'
+import type { HarnessGatewayFacade } from '../harness-gateway/index.js'
+import { finalAssistantInterrupted, finalAssistantText, highestSeq, mergeEvents, stringAt, terminalOutcome, userRpcId, utf8Tail } from '../run-events.js'
+import type { OperationRecord, RpcEvent, RunStatus } from '../types.js'
+import type { RunRecord } from './internal-types.js'
+import type { OperationJournal } from './operation-journal.js'
+import type { PermissionController } from './permission-controller.js'
+import { currentRunWarnings, PERMISSION_RESTORE_WARNING } from './helpers.js'
+
+export class RunReconciler {
+  constructor(
+    private readonly gateway: HarnessGatewayFacade,
+    private readonly config: RelayConfig,
+    private readonly activeSessions: Map<string, string>,
+    private readonly operations: Map<string, OperationRecord>,
+    private readonly journal: OperationJournal,
+    private readonly permissions: PermissionController,
+    private readonly hasPendingInteraction: (runId: string) => boolean = () => false,
+    private readonly isSubmittingPrompt: (operationId: string) => boolean = () => false,
+  ) {}
+
+  private readonly inFlightRefreshes = new Map<string, Promise<void>>()
+
+  refresh(run: RunRecord, options: { permissionRecovery?: boolean } = {}): Promise<void> {
+    // list_runs, get_run, and wait_run may poll the same run concurrently.
+    // Share identical native reads/finalization, while keeping permission
+    // recovery separate from ordinary refreshes.
+    const recovery = options.permissionRecovery === true
+    const key = `${run.snapshot.runId}:${recovery ? 'recovery' : 'normal'}`
+    const inFlight = this.inFlightRefreshes.get(key)
+    if (inFlight !== undefined) return inFlight
+
+    const refresh = this.refreshRun(run, options).finally(() => {
+      if (this.inFlightRefreshes.get(key) === refresh) this.inFlightRefreshes.delete(key)
+    })
+    this.inFlightRefreshes.set(key, refresh)
+    return refresh
+  }
+
+  private async refreshRun(run: RunRecord, options: { permissionRecovery?: boolean } = {}): Promise<void> {
+    const stalled = run.snapshot.status === 'needs_attention' && run.snapshot.attentionReason === 'run_stalled'
+    const permissionRecovery = options.permissionRecovery === true && run.snapshot.status === 'needs_attention'
+      && run.snapshot.attentionReason === 'permission_restore_failed'
+    if (run.snapshot.status !== 'running' && run.snapshot.status !== 'unknown' && !stalled && !permissionRecovery) return
+    const previousLastSeq = run.snapshot.lastEventSeq
+    const listed = await this.gateway.listSessions()
+    const session = listed.find(item => item.sessionId === run.snapshot.sessionId)
+    if (session === undefined) {
+      if (permissionRecovery) return
+      await this.finalize(run, 'failed', `Harness session is no longer listed: ${run.snapshot.sessionId}`)
+      return
+    }
+    if (session.running && !permissionRecovery) this.activeSessions.set(activeKey(run), run.snapshot.runId)
+    // First/recovery refresh pulls from baselineSeq; later refreshes continue
+    // from the highest durable seq already loaded instead of replaying history.
+    const previousDurableSeq = run.events.length === 0 ? previousLastSeq : highestSeq(run.events, run.baselineSeq)
+    const previousTrailingEvent = run.events.at(-1)
+    const historyCursor = incrementalStartSeq(run.events, run.baselineSeq)
+    run.events = mergeEvents(run.events, await this.historyAfter(run.snapshot.sessionId, historyCursor))
+    const durableLastSeq = highestSeq(run.events, run.baselineSeq)
+    // The inclusive tail is reread for in-place updates; an unchanged tail or
+    // reloaded checkpoint is not evidence that a silent run made progress.
+    const trailingProgress = previousTrailingEvent !== undefined
+      && !isDeepStrictEqual(previousTrailingEvent, run.events.at(-1))
+    const projectionLastSeq = session.projections?.asOfSeq
+    const projectionProgress = typeof projectionLastSeq === 'number'
+      && (run.lastObservedProjectionSeq === undefined
+        ? projectionLastSeq > run.snapshot.lastEventSeq
+        : projectionLastSeq > run.lastObservedProjectionSeq)
+    if (typeof projectionLastSeq === 'number') {
+      run.lastObservedProjectionSeq = Math.max(run.lastObservedProjectionSeq ?? projectionLastSeq, projectionLastSeq)
+    }
+    run.snapshot.lastEventSeq = Math.max(
+      run.snapshot.lastEventSeq,
+      durableLastSeq,
+      typeof projectionLastSeq === 'number' ? projectionLastSeq : run.snapshot.lastEventSeq,
+    )
+    if (!permissionRecovery && (durableLastSeq > previousDurableSeq || trailingProgress || projectionProgress)) this.recordProgress(run)
+    const promptEvent = run.events.find(event => userRpcId(event) === run.promptRpcId)
+    if (promptEvent === undefined) {
+      if (permissionRecovery) return
+      if (session.running && run.snapshot.promptAdmission === 'accepted') this.markStalled(run)
+      await this.reconcileMissingPrompt(run, session.running, previousLastSeq)
+      return
+    }
+    run.snapshot.promptAdmission = 'accepted'
+    if (!permissionRecovery) run.snapshot.error = null
+    run.snapshot.promptMessageId = stringAt(promptEvent.data, 'id')
+    const operation = run.snapshot.operationId === undefined ? undefined : this.operations.get(run.snapshot.operationId)
+    if (operation !== undefined && !this.isSubmittingPrompt(operation.operationId) && (operation.state === 'prepared' || operation.state === 'submitted' || operation.state === 'unknown')) {
+      await this.journal.transition(operation, operation.state === 'unknown' ? 'reconciled' : 'acknowledged', { messageId: run.snapshot.promptMessageId })
+    }
+    const owned = this.ownedEvents(run, promptEvent)
+    const terminal = [...owned].reverse().find(event => event.type === 'turn/end')
+    const relevant = owned.filter(event => terminal === undefined || event.seq <= terminal.seq)
+    const retained = utf8Tail(finalAssistantText(relevant), this.config.maxAssistantTextBytes)
+    run.snapshot.assistantText = retained.text
+    run.snapshot.assistantTextBytes = retained.bytes
+    run.snapshot.assistantTextTruncated = retained.truncated
+    if (terminal === undefined) {
+      if (permissionRecovery) return
+      if (session.running) this.markStalled(run)
+      return
+    }
+    const outcome = terminalOutcome(terminal, run.snapshot.cancelRequested, finalAssistantInterrupted(relevant))
+    if (outcome.warning !== undefined && !run.snapshot.warnings.includes(outcome.warning)) run.snapshot.warnings.push(outcome.warning)
+    await this.finalize(run, outcome.status, outcome.error)
+  }
+
+  private ownedEvents(run: RunRecord, promptEvent: RpcEvent): RpcEvent[] {
+    const ownedRpcIds = new Set<string>([run.promptRpcId])
+    const ownedMessageIds = new Set<string>()
+    if (run.snapshot.promptMessageId !== null) ownedMessageIds.add(run.snapshot.promptMessageId)
+    for (const operation of this.operations.values()) {
+      // Queue operations belong to the same session/run for tracking, but their
+      // later turn is a new task boundary and must never extend this run's output.
+      if (operation.runId !== run.snapshot.runId || operation.kind !== 'steer') continue
+      ownedRpcIds.add(operation.rpcId)
+      if (operation.messageId !== null) ownedMessageIds.add(operation.messageId)
+    }
+    const nextForeignUser = run.events.find(event => {
+      if (event.seq <= promptEvent.seq) return false
+      const rpcId = userRpcId(event)
+      if (rpcId === null) return false
+      if (ownedRpcIds.has(rpcId)) return false
+      const messageId = stringAt(event.data, 'id')
+      return messageId === null || !ownedMessageIds.has(messageId)
+    })
+    return run.events.filter(event => event.seq > promptEvent.seq
+      && (nextForeignUser === undefined || event.seq < nextForeignUser.seq))
+  }
+
+  /** Incremental history fetch from the run's current highest loaded durable seq. */
+  historySince(run: RunRecord): Promise<RpcEvent[]> {
+    return this.historyAfter(run.snapshot.sessionId, incrementalStartSeq(run.events, run.baselineSeq))
+  }
+
+  async historyAfter(sessionId: string, fromSeq: number): Promise<RpcEvent[]> {
+    const events: RpcEvent[] = []
+    let beforeSeq: number | undefined
+    for (let pageNumber = 0; pageNumber < this.config.maxHistoryPages; pageNumber += 1) {
+      const page = await this.gateway.readHistory({
+        sessionId,
+        maxMessages: 100,
+        ...(beforeSeq === undefined ? {} : { beforeSeq }),
+      })
+      const pageEvents = page.events.map(entry => entry.event)
+      events.push(...pageEvents.filter(event => event.seq > fromSeq))
+      const oldest = pageEvents.reduce((value, event) => Math.min(value, event.seq), Number.POSITIVE_INFINITY)
+      if (!page.hasMore || !Number.isFinite(oldest) || oldest <= fromSeq) break
+      if (beforeSeq !== undefined && oldest >= beforeSeq) {
+        throw new Error(`Harness history pagination made no progress for session ${sessionId}`)
+      }
+      beforeSeq = oldest
+      if (pageNumber + 1 === this.config.maxHistoryPages) {
+        throw new Error(`Harness history exceeded DSH_RELAY_MAX_HISTORY_PAGES for session ${sessionId}`)
+      }
+    }
+    return mergeEvents([], events)
+  }
+
+  async latestSeq(sessionId: string): Promise<number> {
+    const page = await this.gateway.readHistory({ sessionId, maxMessages: 1 })
+    return highestSeq(page.events.map(entry => entry.event), -1)
+  }
+
+  async finalize(run: RunRecord, status: Exclude<RunStatus, 'running' | 'unknown' | 'needs_attention'>, error: string | null): Promise<void> {
+    const finishedAt = run.snapshot.finishedAt ?? new Date().toISOString()
+    run.snapshot.finishedAt = finishedAt
+    run.snapshot.lastProgressAt = finishedAt
+    run.snapshot.executionOutcome = { status, error, finishedAt }
+    run.snapshot.permissionRestoration = 'pending'
+    if (this.activeSessions.get(activeKey(run)) === run.snapshot.runId) this.activeSessions.delete(activeKey(run))
+    // Lease restoration persists state itself. Keep an attention snapshot until
+    // it succeeds, so intermediate writes and concurrent reads cannot publish a
+    // false terminal or start a second finalization while restoration is pending.
+    run.snapshot.status = 'needs_attention'
+    run.snapshot.attentionReason = 'permission_restore_failed'
+    run.snapshot.error = 'The run completed, but the previous Harness permission preset could not be restored'
+    if (!await this.restorePermission(run)) return
+    run.snapshot.permissionRestoration = 'complete'
+    run.snapshot.status = status
+    run.snapshot.error = error
+    delete run.snapshot.attentionReason
+    run.snapshot.warnings = currentRunWarnings(run.snapshot)
+  }
+
+  private async reconcileMissingPrompt(run: RunRecord, sessionRunning: boolean, previousLastSeq: number): Promise<void> {
+    if (!sessionRunning && run.snapshot.cancelRequested) {
+      await this.finalize(run, 'cancelled', null)
+      return
+    }
+    const admissionExpired = Date.now() - Date.parse(run.snapshot.startedAt) >= this.config.rpcTimeoutMs
+    const operation = run.snapshot.operationId === undefined ? undefined : this.operations.get(run.snapshot.operationId)
+    const submissionStillRecoverable = operation?.state === 'prepared' || operation?.state === 'submitted'
+    if (!sessionRunning && run.snapshot.promptAdmission !== 'accepted' && admissionExpired
+      && run.snapshot.lastEventSeq <= previousLastSeq && !submissionStillRecoverable) {
+      run.snapshot.promptAdmission = 'rejected'
+      if (operation !== undefined && operation.state !== 'failed') {
+        await this.journal.transition(operation, 'failed', { error: run.snapshot.error ?? 'Harness did not persist the submitted prompt' })
+      }
+      await this.finalize(run, 'failed', run.snapshot.error ?? 'Harness did not persist the submitted prompt')
+    }
+  }
+
+  private async restorePermission(run: RunRecord): Promise<boolean> {
+    if (await this.permissions.restoreSession(run.snapshot.sessionId, run.snapshot.operationId)) return true
+    run.snapshot.permissionRestoration = 'failed'
+    run.snapshot.status = 'needs_attention'
+    run.snapshot.attentionReason = 'permission_restore_failed'
+    run.snapshot.error = 'The run completed, but the previous Harness permission preset could not be restored'
+    const warning = PERMISSION_RESTORE_WARNING
+    if (!run.snapshot.warnings.includes(warning)) run.snapshot.warnings.push(warning)
+    return false
+  }
+
+  private recordProgress(run: RunRecord): void {
+    run.snapshot.lastProgressAt = new Date().toISOString()
+    if (run.snapshot.attentionReason !== 'run_stalled') return
+    run.snapshot.status = 'running'
+    run.snapshot.error = null
+    delete run.snapshot.attentionReason
+  }
+
+  private markStalled(run: RunRecord): void {
+    if (this.hasPendingInteraction(run.snapshot.runId)) return
+    const lastProgressAt = run.snapshot.lastProgressAt ?? run.snapshot.startedAt
+    if (Date.now() - Date.parse(lastProgressAt) < this.config.runStallMs) return
+    run.snapshot.status = 'needs_attention'
+    run.snapshot.attentionReason = 'run_stalled'
+    run.snapshot.error = 'Harness reports the session as running, but no durable progress was observed before the stall timeout'
+  }
+}
+
+function activeKey(run: RunRecord): string {
+  return `${run.snapshot.serviceId}:${run.snapshot.sessionId}`
+}
+
+/**
+ * Monotonic after-cursor for a run: the highest durable event seq already
+ * loaded in this process, falling back to baselineSeq on first or recovery
+ * refresh so history is resumed from the persisted checkpoint instead of
+ * being replayed from the beginning of the session.
+ *
+ * Harness may finalize the newest event in place. Treat that trailing event
+ * as not yet durable and keep it inside the next cursor window; older durable
+ * history is never replayed.
+ */
+export function incrementalStartSeq(events: RpcEvent[], baselineSeq: number): number {
+  const highest = highestSeq(events, baselineSeq)
+  return highest === baselineSeq ? baselineSeq : Math.max(baselineSeq, highest - 1)
+}

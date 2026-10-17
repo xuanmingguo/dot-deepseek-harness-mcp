@@ -1,0 +1,22 @@
+# Config-file interface verified with official tunnel-client 0.0.16.
+# Replace placeholders privately. Paths are literal, not shell-expanded.
+config_version: 1
+control_plane:
+  base_url: https://api.openai.com
+  tunnel_id: tunnel_REPLACE_WITH_OWN_ID
+  api_key: env:CONTROL_PLANE_API_KEY
+  organization_id: org_REPLACE_WITH_OWN_ID
+health:
+  listen_addr: "127.0.0.1:0"
+  url_file: /home/example/.config/tunnel-client/dsh-harness/health-url
+admin_ui:
+  open_browser: false
+log:
+  level: info
+  format: json
+  http_raw_unsafe: false
+mcp:
+  stdio_send_initialized_notification: true
+  commands:
+    - channel: main
+      command: /home/example/.local/libexec/dsh-relay-stdio

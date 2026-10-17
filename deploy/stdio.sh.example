@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+export DSH_HOME="${DSH_HOME:-$HOME/.dsh}"
+export DSH_PROFILE="${DSH_PROFILE:-web}"
+export DSH_RELAY_AUTO_START=false
+export DSH_RELAY_CLIENT_PRINCIPAL_ID="${DSH_RELAY_CLIENT_PRINCIPAL_ID:-dot-client}"
+# Set this in the private launcher environment; use the checked local build.
+: "${DSH_RELAY_PROXY_ENTRY:?Set the absolute path to dist/dsh-relay-proxy.mjs}"
+case "$DSH_RELAY_PROXY_ENTRY" in
+  /*) ;;
+  *) printf '%s\n' 'DSH_RELAY_PROXY_ENTRY must be an absolute path' >&2; exit 1 ;;
+esac
+exec node "$DSH_RELAY_PROXY_ENTRY"

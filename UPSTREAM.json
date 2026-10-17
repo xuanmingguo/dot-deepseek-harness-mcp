@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/tonytanglab/deepseek-harness-relay-mcp",
+  "commit": "17e690cf9a56fc65fe39b2c214276cfdcb5a1891",
+  "archiveSHA256": "515463f10ada22f492accd3e914748dcabefedd91ddd133b6bebd54cf253ce63",
+  "license": "MIT",
+  "baseVersion": "0.2.18",
+  "compatibleHarness": "0.2.1-alpha.2"
+}

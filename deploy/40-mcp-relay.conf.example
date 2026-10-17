@@ -1,0 +1,9 @@
+# Example drop-in for the EXISTING Harness user service.
+# Replace the workspace root with a directory you intend to expose.
+[Service]
+Environment=DSH_RELAY_ALLOWED_WORKSPACE_ROOTS=/home/example/projects
+Environment=DSH_RELAY_MAX_ACTIVE_RUNS=4
+Environment=DSH_RELAY_TRUSTED_OPERATOR=false
+Environment=DSH_RELAY_PERSIST_PROMPT_TEXT=false
+Environment=DSH_RELAY_ALLOW_QUOTA_FALLBACK=false
+# Choose provider/model/reasoning from the existing Host's live capabilities.

@@ -1,0 +1,5 @@
+# Tree-external Harness Relay MCP bundle layer. This inserts one row and does not
+# replace any Harness product row or configuration.
+- insert:
+    - id: harness-relay-mcp
+      name: 'harness-relay-mcp'

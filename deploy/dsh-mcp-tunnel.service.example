@@ -1,0 +1,17 @@
+# Adapt paths for your installed official tunnel-client and private configuration.
+# The existing Harness Host has its own lifecycle; this unit does not start it.
+[Unit]
+Description=DOT DeepSeek Harness private MCP Tunnel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=%h/.config/tunnel-client/dsh-harness/runtime.env
+ExecStart=%h/.local/bin/tunnel-client run --config %h/.config/tunnel-client/dsh-harness/config.yaml
+WorkingDirectory=%h
+Restart=on-failure
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=default.target

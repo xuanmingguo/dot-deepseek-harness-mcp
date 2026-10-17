@@ -1,0 +1,12 @@
+export { NativeControlFacade, NativeControlError, MAX_NATIVE_JSON_BYTES, MAX_ARTIFACT_BYTES, MAX_ARTIFACT_FILE_BYTES, MAX_CLEAR_QUEUE_ITEMS } from './native-control-facade.js'
+export type { NativeControlOptions, HistoryInput, HistoryResult, NativeHistoryRecord, ArtifactInput, QueueItem, QueueSnapshot } from './native-control-facade.js'
+export { registerNativeControlTools } from './register-tools.js'
+export type { HistorySearchInput, HistorySearchMatch, HistorySearchResult } from './history-search.js'
+export type { HistoryContextInput, HistoryContextResult, HistoryContextMessage, HistoryContextTextBlock } from './history-context.js'
+export type { ProjectFilesInput, ProjectFilesResult, ProjectFileEntry } from './project-files.js'
+export { MAX_PROJECT_DIRECTORY_ENTRIES, MAX_PROJECT_FILES_BYTES } from './project-files.js'
+export type { ProjectTextInput, ProjectTextResult } from './project-text.js'
+export { MAX_PROJECT_TEXT_FILE_BYTES, MAX_PROJECT_TEXT_BYTES, MAX_PROJECT_TEXT_OUTPUT_BYTES } from './project-text.js'
+
+export type { ProjectSearchInput, ProjectSearchResult, ProjectSearchMatch } from './project-search.js'
+export { PROJECT_SEARCH_LIMITS, PROJECT_SEARCH_EXCLUDED_DIRECTORIES } from './project-search.js'

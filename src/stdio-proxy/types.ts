@@ -1,0 +1,70 @@
+import type { RelayEndpointDescriptor } from '../authority/index.js'
+import type { RelayStatusDocument } from '../relay-runtime/index.js'
+import type { ProcessProbe } from '../state-repository/index.js'
+
+export type { RelayEndpointDescriptor }
+
+export interface StdioProxyConfig {
+  descriptorFile: string
+  statusFile?: string
+  clientPrincipalId: string
+  requestTimeoutMs: number
+  maxTaskCharacters?: number
+  autoStart?: boolean
+  autoStartTimeoutMs?: number
+}
+
+export interface StdioProxyDependencies {
+  processProbe?: ProcessProbe
+  hostAutostart?: {
+    recover(
+      inspection: import('./proxy-diagnostics-facade.js').ProxyInspection,
+      inspect: () => Promise<import('./proxy-diagnostics-facade.js').ProxyInspection>,
+    ): Promise<import('./proxy-diagnostics-facade.js').ProxyInspection>
+  }
+}
+
+export type ProxyRouteReasonCode =
+  | 'DESCRIPTOR_MISSING'
+  | 'DESCRIPTOR_INVALID'
+  | 'STATUS_MISSING'
+  | 'STATUS_INVALID'
+  | 'STATUS_FAILED'
+  | 'STATUS_NOT_READY'
+  | 'OWNER_DEAD'
+  | 'OWNER_UNPROBEABLE'
+  | 'HOST_AUTO_START_UNAVAILABLE'
+  | 'HOST_AUTO_START_BLOCKED'
+  | 'HOST_AUTO_START_FAILED'
+  | 'HOST_AUTO_START_TIMEOUT'
+  | 'STALE_ENDPOINT_DESCRIPTOR'
+  | 'TOKEN_UNREADABLE'
+  | 'TOKEN_INVALID'
+  | 'AUTHENTICATION_FAILED'
+  | 'POST_ROUTE_MISSING'
+  | 'REMOTE_DRAINING'
+  | 'REMOTE_UNAVAILABLE'
+
+export interface ProxyRouteFailure {
+  code: 'RELAY_ROUTE_UNAVAILABLE'
+  reasonCode: ProxyRouteReasonCode
+  message: string
+  retryable: boolean
+  remediation: string
+}
+
+export interface ProxyDoctorReport {
+  schemaVersion: 1
+  ok: boolean
+  relayVersion: string
+  mode: 'stdio-proxy'
+  descriptorFile: string
+  statusFile: string
+  status: RelayStatusDocument | null
+  endpoint: Omit<RelayEndpointDescriptor, 'tokenFilePath'> | null
+  tokenFile: { exists: boolean; readable: boolean; valid: boolean }
+  ownerProbe: { processId: number | null; state: 'none' | 'alive' | 'dead' | 'unknown' }
+  remote: { connected: boolean; lastError: ProxyRouteFailure | null }
+  errorCode: ProxyRouteReasonCode | null
+  remediation: string | null
+}
